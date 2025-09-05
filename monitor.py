@@ -16,6 +16,7 @@ device.set_mode("Static")
 # Pick Zone
 cpu_zone = device.zones[1]
 gpu_zone = device.zones[3]
+extra_zone = device.zones[2]
 
 
 # Simple usage → color mapping: green = idle, red = full load
@@ -30,6 +31,7 @@ def usage_to_color(usage: float):
 psutil.cpu_percent(interval=None)
 pynvml.nvmlInit()
 
+extra_zone.set_color(RGBColor(255, 255, 255))
 while True:
     try:
         cpu_usage = psutil.cpu_percent()
@@ -40,5 +42,6 @@ while True:
     except KeyboardInterrupt:
         cpu_zone.set_color(RGBColor(255, 255, 255))
         gpu_zone.set_color(RGBColor(255, 255, 255))
+        extra_zone.set_color(RGBColor(255, 255, 255))
         pynvml.nvmlShutdown()
         break

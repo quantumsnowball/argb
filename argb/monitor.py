@@ -47,8 +47,6 @@ def monitor() -> None:
             vram_zone.set_color(usage_to_color(float(vram_usage)))
             time.sleep(0.2)
         except KeyboardInterrupt:
-            cpu_zone.set_color(RGBColor(255, 255, 255))
-            gpu_zone.set_color(RGBColor(255, 255, 255))
-            vram_zone.set_color(RGBColor(255, 255, 255))
             pynvml.nvmlShutdown()
+            device.set_mode('color shift')
             break

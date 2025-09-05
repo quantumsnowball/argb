@@ -13,5 +13,9 @@ def mode(mode: str) -> None:
     device = client.get_devices_by_type(DeviceType.MOTHERBOARD)[0]
     for char in ('-', '_'):
         mode = mode.replace(char, ' ')
-    device.set_mode(mode, save=True)
+    try:
+        device.set_mode(mode, save=True)
+    except ValueError as e:
+        click.secho(e, fg='red')
+
     # device.modes[device.active_mode].speed = 255

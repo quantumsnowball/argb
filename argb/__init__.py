@@ -1,5 +1,6 @@
 import click
 
+from argb.info import info
 from argb.mode import mode
 from argb.monitor import monitor
 
@@ -11,3 +12,4 @@ def argb() -> None:
 
 argb.add_command(monitor)
 argb.add_command(mode)
+argb.add_command(info)

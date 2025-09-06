@@ -25,6 +25,7 @@ class Monitor:
 
     def __enter__(self) -> Self:
         pynvml.nvmlInit()
+        self._device.set_mode('Static')
         return self
 
     def __exit__(self, type, value, traceback) -> None:

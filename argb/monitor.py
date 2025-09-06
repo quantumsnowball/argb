@@ -31,9 +31,13 @@ class Monitor:
 
     def run(self) -> None:
         # Simple usage → color mapping: green = idle, red = full load
-        def usage_to_color(usage: float):
-            r = int((usage / 100) * 255)
-            g = int(255 - (usage / 100) * 255)
+        def usage_to_color(usage: float, *, floor: float = 0.0, ceiling: float = 100.0):
+            # Normalize ratio
+            ratio = (usage - floor) / (ceiling - floor)
+            ratio = max(0.0, min(1.0, ratio))
+            # calc color
+            r = int(ratio * 255)
+            g = int(255 - ratio * 255)
             b = 0
             return RGBColor(r, g, b)
 
@@ -42,14 +46,18 @@ class Monitor:
         vram_zone = self._device.zones[2]
         gpu_handle = pynvml.nvmlDeviceGetHandleByIndex(0)
         while not self._stop_event.is_set():
+            # cpu
             cpu_usage = psutil.cpu_percent()
             cpu_zone.set_color(usage_to_color(cpu_usage))
+            # gpu
             gpu_util = pynvml.nvmlDeviceGetUtilizationRates(gpu_handle)
             gpu_usage = gpu_util.gpu
-            gpu_zone.set_color(usage_to_color(float(gpu_usage)))
+            gpu_zone.set_color(usage_to_color(float(gpu_usage), ceiling=70))
+            # vram
             vram_info = pynvml.nvmlDeviceGetMemoryInfo(gpu_handle)
             vram_usage = float(vram_info.used) / float(vram_info.total) * 100
             vram_zone.set_color(usage_to_color(float(vram_usage)))
+            #
             time.sleep(0.2)
 
 

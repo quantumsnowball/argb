@@ -1,6 +1,7 @@
 import signal
 import threading
 import time
+import types
 from typing import Self
 
 import click
@@ -12,16 +13,13 @@ from argb.session import Session
 
 
 class Monitor:
-    def __init__(
-        self,
-        session: Session,
-    ) -> None:
+    def __init__(self, session: Session) -> None:
         self._device = session.motherboard
         self._stop_event = threading.Event()
 
-        def sigint_handler(_signum, _frame) -> None:
+        def on_sigint(_signum: int, _frame: types.FrameType | None) -> None:
             self._stop_event.set()
-        signal.signal(signal.SIGINT, sigint_handler)
+        signal.signal(signal.SIGINT, on_sigint)
 
     def __enter__(self) -> Self:
         pynvml.nvmlInit()
@@ -57,5 +55,8 @@ class Monitor:
 
 @click.command
 def monitor() -> None:
-    with Session() as session, Monitor(session) as monitor:
+    with (
+        Session() as session,
+        Monitor(session) as monitor,
+    ):
         monitor.run()

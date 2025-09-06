@@ -7,19 +7,41 @@ from openrgb import OpenRGBClient
 from argb.utils import PORT
 
 
-class Session(OpenRGBClient):
+class Session:
     def __init__(
         self,
         port: int = PORT,
     ) -> None:
-        self._proc = Popen(
-            ['openrgb', '--server', f'--server-port', str(port)],
+        self._port = port
+        self._server: Popen | None = None
+        self._client: OpenRGBClient | None = None
+
+    @property
+    def server(self) -> Popen:
+        assert self._server is not None
+        return self._server
+
+    @property
+    def client(self) -> OpenRGBClient:
+        assert self._client is not None
+        return self._client
+
+    def __enter__(self) -> Self:
+        self.start()
+        return self
+
+    def __exit__(self, type, value, traceback) -> None:
+        self.stop()
+
+    def start(self) -> None:
+        self._server = Popen(
+            ['openrgb', '--server', f'--server-port', str(self._port)],
             stdout=DEVNULL,
             stderr=DEVNULL,
         )
         for _ in range(10):
             try:
-                super().__init__(port=port)
+                self._client = OpenRGBClient(port=self._port)
                 break
             except TimeoutError:
                 time.sleep(1)
@@ -27,15 +49,11 @@ class Session(OpenRGBClient):
         else:
             raise TimeoutError
 
-    def __enter__(self) -> Self:
-        return self
-
-    def __exit__(self, type, value, traceback) -> None:
-        if self._proc is not None:
-            self._proc.terminate()
-
     def stop(self) -> None:
-        self.disconnect()
+        if self._client is not None:
+            self._client.disconnect()
+        if self._server is not None:
+            self._server.terminate()
 
 
 class OpenRGB:

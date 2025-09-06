@@ -25,6 +25,10 @@ def argb(
         return
 
     # preprocessing args
+    if all([o is None for o in (mode, speed, brightness, color)]):
+        click.echo(ctx.get_help())
+        ctx.exit(1)
+
     if mode is not None:
         for char in ('-', '_'):
             mode = mode.replace(char, ' ')

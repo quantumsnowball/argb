@@ -36,3 +36,32 @@ class Client(OpenRGBClient):
 
     def stop(self) -> None:
         self.disconnect()
+
+
+class OpenRGB:
+    def __init__(
+        self,
+        mode: str | None,
+        speed: int | None,
+        brightness: int | None,
+        color: str | None,
+    ) -> None:
+        self._args = ['openrgb', ]
+        if mode is not None:
+            self._args += ['-m', str(mode)]
+        if speed is not None:
+            self._args += ['-s', str(speed)]
+        if brightness is not None:
+            self._args += ['-b', str(brightness)]
+        if color is not None:
+            self._args += ['-c', str(color)]
+        self._proc: Popen | None = None
+
+    def __enter__(self) -> Self:
+        self._proc = Popen(self._args, stdout=DEVNULL, stderr=DEVNULL)
+        self._proc.wait()
+        return self
+
+    def __exit__(self, type, value, traceback) -> None:
+        if self._proc is not None:
+            self._proc.terminate()

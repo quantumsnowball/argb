@@ -5,14 +5,14 @@ import psutil
 import pynvml
 from openrgb.utils import RGBColor
 
-from argb.client import Client
+from argb.client import Session
 
 
 @click.command
 def monitor() -> None:
-    with Client() as client:
+    with Session() as session:
         # Connect to OpenRGB
-        device = client.devices[0]
+        device = session.devices[0]
 
         # Force Static mode
         device.set_mode("Static")
@@ -48,4 +48,4 @@ def monitor() -> None:
         except (click.Abort, KeyboardInterrupt):
             pynvml.nvmlShutdown()
             device.set_mode('color shift')
-            client.stop()
+            session.stop()

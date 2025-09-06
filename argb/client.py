@@ -7,7 +7,7 @@ from openrgb import OpenRGBClient
 from argb.utils import PORT
 
 
-class Client(OpenRGBClient):
+class Session(OpenRGBClient):
     def __init__(
         self,
         port: int = PORT,

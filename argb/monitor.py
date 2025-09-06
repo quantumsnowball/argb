@@ -32,7 +32,6 @@ def monitor() -> None:
             return RGBColor(r, g, b)
 
         # Warm up measurement
-        psutil.cpu_percent(interval=None)
         pynvml.nvmlInit()
 
         gpu_handle = pynvml.nvmlDeviceGetHandleByIndex(0)

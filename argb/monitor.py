@@ -1,6 +1,8 @@
 import signal
 import threading
 import time
+import types
+from typing import Self
 
 import click
 import psutil
@@ -10,20 +12,24 @@ from openrgb.utils import RGBColor
 from argb.session import Session
 
 
-@click.command
-def monitor() -> None:
-    with Session() as session:
-        # Connect to OpenRGB
-        device = session.motherboard
+class Monitor:
+    def __init__(self, session: Session) -> None:
+        self._device = session.motherboard
+        self._stop_event = threading.Event()
 
-        # Force Static mode
-        device.set_mode("Static")
+        def on_sigint(_signum: int, _frame: types.FrameType | None) -> None:
+            self._stop_event.set()
+        signal.signal(signal.SIGINT, on_sigint)
 
-        # Pick Zone
-        cpu_zone = device.zones[1]
-        gpu_zone = device.zones[3]
-        vram_zone = device.zones[2]
+    def __enter__(self) -> Self:
+        pynvml.nvmlInit()
+        self._device.set_mode('Static')
+        return self
 
+    def __exit__(self, type, value, traceback) -> None:
+        pynvml.nvmlShutdown()
+
+    def run(self) -> None:
         # Simple usage → color mapping: green = idle, red = full load
         def usage_to_color(usage: float):
             r = int((usage / 100) * 255)
@@ -31,20 +37,11 @@ def monitor() -> None:
             b = 0
             return RGBColor(r, g, b)
 
-        # Warm up measurement
-        pynvml.nvmlInit()
-
+        cpu_zone = self._device.zones[1]
+        gpu_zone = self._device.zones[3]
+        vram_zone = self._device.zones[2]
         gpu_handle = pynvml.nvmlDeviceGetHandleByIndex(0)
-
-        stop_event = threading.Event()
-
-        def sigint_handler(signum, frame) -> None:
-            pynvml.nvmlShutdown()
-            stop_event.set()
-
-        signal.signal(signal.SIGINT, sigint_handler)
-
-        while not stop_event.is_set():
+        while not self._stop_event.is_set():
             cpu_usage = psutil.cpu_percent()
             cpu_zone.set_color(usage_to_color(cpu_usage))
             gpu_util = pynvml.nvmlDeviceGetUtilizationRates(gpu_handle)
@@ -54,3 +51,12 @@ def monitor() -> None:
             vram_usage = float(vram_info.used) / float(vram_info.total) * 100
             vram_zone.set_color(usage_to_color(float(vram_usage)))
             time.sleep(0.2)
+
+
+@click.command
+def monitor() -> None:
+    with (
+        Session() as session,
+        Monitor(session) as monitor,
+    ):
+        monitor.run()

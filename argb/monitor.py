@@ -12,7 +12,7 @@ from argb.session import Session
 def monitor() -> None:
     with Session() as session:
         # Connect to OpenRGB
-        device = session.client.devices[0]
+        device = session.motherboard
 
         # Force Static mode
         device.set_mode("Static")
@@ -47,5 +47,4 @@ def monitor() -> None:
                 time.sleep(0.2)
         except (click.Abort, KeyboardInterrupt):
             pynvml.nvmlShutdown()
-            device.set_mode('color shift')
             session.stop()

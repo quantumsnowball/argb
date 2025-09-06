@@ -3,6 +3,8 @@ from subprocess import DEVNULL, Popen
 from typing import Self
 
 from openrgb import OpenRGBClient
+from openrgb.orgb import Device
+from openrgb.utils import DeviceType
 
 from argb.utils import PORT
 
@@ -25,6 +27,13 @@ class Session:
     def client(self) -> OpenRGBClient:
         assert self._client is not None
         return self._client
+
+    @property
+    def motherboard(self) -> Device:
+        try:
+            return next(dev for dev in self.client.devices if dev.type == DeviceType.MOTHERBOARD)
+        except StopIteration:
+            raise RuntimeError("No motherboard device found")
 
     def __enter__(self) -> Self:
         self.start()

@@ -2,6 +2,7 @@ import time
 from subprocess import DEVNULL, Popen
 from typing import Self
 
+import click
 from openrgb import OpenRGBClient
 from openrgb.orgb import Device
 from openrgb.utils import DeviceType
@@ -51,6 +52,7 @@ class Session:
         for _ in range(10):
             try:
                 self._client = OpenRGBClient(port=self._port)
+                click.secho('OpenRGBClient is ready.', fg='green')
                 break
             except TimeoutError:
                 time.sleep(1)

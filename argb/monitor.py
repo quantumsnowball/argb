@@ -1,3 +1,5 @@
+import signal
+import threading
 import time
 
 import click
@@ -34,17 +36,22 @@ def monitor() -> None:
         pynvml.nvmlInit()
 
         gpu_handle = pynvml.nvmlDeviceGetHandleByIndex(0)
-        try:
-            while True:
-                cpu_usage = psutil.cpu_percent()
-                cpu_zone.set_color(usage_to_color(cpu_usage))
-                gpu_util = pynvml.nvmlDeviceGetUtilizationRates(gpu_handle)
-                gpu_usage = gpu_util.gpu
-                gpu_zone.set_color(usage_to_color(float(gpu_usage)))
-                vram_info = pynvml.nvmlDeviceGetMemoryInfo(gpu_handle)
-                vram_usage = float(vram_info.used) / float(vram_info.total) * 100
-                vram_zone.set_color(usage_to_color(float(vram_usage)))
-                time.sleep(0.2)
-        except (click.Abort, KeyboardInterrupt):
+
+        stop_event = threading.Event()
+
+        def sigint_handler(signum, frame) -> None:
             pynvml.nvmlShutdown()
-            session.stop()
+            stop_event.set()
+
+        signal.signal(signal.SIGINT, sigint_handler)
+
+        while not stop_event.is_set():
+            cpu_usage = psutil.cpu_percent()
+            cpu_zone.set_color(usage_to_color(cpu_usage))
+            gpu_util = pynvml.nvmlDeviceGetUtilizationRates(gpu_handle)
+            gpu_usage = gpu_util.gpu
+            gpu_zone.set_color(usage_to_color(float(gpu_usage)))
+            vram_info = pynvml.nvmlDeviceGetMemoryInfo(gpu_handle)
+            vram_usage = float(vram_info.used) / float(vram_info.total) * 100
+            vram_zone.set_color(usage_to_color(float(vram_usage)))
+            time.sleep(0.2)

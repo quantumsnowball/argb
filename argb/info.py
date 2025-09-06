@@ -1,6 +1,6 @@
 import click
 
-from argb.client import Session
+from argb.session import Session
 
 
 @click.command

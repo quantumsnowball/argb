@@ -1,8 +1,8 @@
 import click
 
-from argb.client import OpenRGB
 from argb.info import info
 from argb.monitor import monitor
+from argb.session import OpenRGB
 
 
 @click.group(invoke_without_command=True)

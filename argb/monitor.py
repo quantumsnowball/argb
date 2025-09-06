@@ -5,7 +5,7 @@ import psutil
 import pynvml
 from openrgb.utils import RGBColor
 
-from argb.client import Session
+from argb.session import Session
 
 
 @click.command

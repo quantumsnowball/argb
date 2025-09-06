@@ -2,7 +2,6 @@ import click
 
 from argb.client import OpenRGB
 from argb.info import info
-from argb.mode import mode
 from argb.monitor import monitor
 
 
@@ -36,5 +35,4 @@ def argb(
 
 
 argb.add_command(monitor)
-argb.add_command(mode)
 argb.add_command(info)

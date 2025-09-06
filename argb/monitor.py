@@ -12,7 +12,7 @@ from argb.session import Session
 def monitor() -> None:
     with Session() as session:
         # Connect to OpenRGB
-        device = session.devices[0]
+        device = session.client.devices[0]
 
         # Force Static mode
         device.set_mode("Static")

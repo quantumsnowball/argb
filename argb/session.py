@@ -1,4 +1,6 @@
+import os
 import subprocess
+import sys
 import time
 from subprocess import DEVNULL, Popen
 from typing import Self
@@ -49,10 +51,11 @@ class Session:
         # p.s. on windows, the flag CREATE_NEW_PROCESS_GROUP is needed to avoid leaking sigint into this process
         # on ctrl C, windows will issue CTRL_C_EVENT to all process in the same process group, thus kills the socket
         self._server = Popen(
-            ['openrgb', '--server', f'--server-port', str(self._port)],
+            ['openrgb', '--server', '--server-host', '127.0.0.1', '--server-port', str(self._port)],
             stdout=DEVNULL,
             stderr=DEVNULL,
-            creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
+            creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if sys.platform == 'win32' else 0,
+            preexec_fn=None if sys.platform == 'win32' else os.setsid,
         )
         for _ in range(10):
             try:
@@ -99,3 +102,4 @@ class OpenRGB:
     def __exit__(self, type, value, traceback) -> None:
         if self._proc is not None:
             self._proc.terminate()
+            self._proc.wait()

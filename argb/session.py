@@ -50,8 +50,13 @@ class Session:
         # launch openrgb in server mode
         # p.s. on windows, the flag CREATE_NEW_PROCESS_GROUP is needed to avoid leaking sigint into this process
         # on ctrl C, windows will issue CTRL_C_EVENT to all process in the same process group, thus kills the socket
-        self._server = Popen(
-            ['openrgb', '--server', '--server-host', '127.0.0.1', '--server-port', str(self._port)],
+        self._server = Popen([
+            'openrgb',
+            '--server',
+            '--server-host', '127.0.0.1',
+            '--server-port', str(self._port),
+            '--noautoconnect',
+        ],
             stdout=DEVNULL,
             stderr=DEVNULL,
             creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if sys.platform == 'win32' else 0,

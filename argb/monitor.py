@@ -27,6 +27,7 @@ class Monitor:
         return self
 
     def __exit__(self, type, value, traceback) -> None:
+        self._device.set_mode('Color shift')
         pynvml.nvmlShutdown()
 
     def run(self) -> None:

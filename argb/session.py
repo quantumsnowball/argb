@@ -1,3 +1,4 @@
+import subprocess
 import time
 from subprocess import DEVNULL, Popen
 from typing import Self
@@ -44,10 +45,14 @@ class Session:
         self.stop()
 
     def start(self) -> None:
+        # launch openrgb in server mode
+        # p.s. on windows, the flag CREATE_NEW_PROCESS_GROUP is needed to avoid leaking sigint into this process
+        # on ctrl C, windows will issue CTRL_C_EVENT to all process in the same process group, thus kills the socket
         self._server = Popen(
             ['openrgb', '--server', f'--server-port', str(self._port)],
             stdout=DEVNULL,
             stderr=DEVNULL,
+            creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
         )
         for _ in range(10):
             try:

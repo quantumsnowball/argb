@@ -88,7 +88,10 @@ class OpenRGB:
         brightness: int | None,
         color: str | None,
     ) -> None:
-        self._args = ['openrgb', ]
+        self._args = [
+            'openrgb',
+            '--noautoconnect',
+        ]
         if mode is not None:
             self._args += ['-m', str(mode)]
         if speed is not None:
